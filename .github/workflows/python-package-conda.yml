@@ -1,36 +1,53 @@
-name: Rust Market Parser
+name: Steam Parallel Parser
 
 on:
+  workflow_dispatch: 
   schedule:
-    - cron: '*/15 * * * *' # Запуск каждые 15 минут
-  workflow_dispatch: # Позволяет запускать вручную кнопкой
+    - cron: '0 * * * *' 
 
 jobs:
   parse:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        # Разделяем 5000 предметов на 10 групп по 500 (или 50 по 100)
-        # Для примера возьмем 5 групп (0, 100, 200, 300, 400)
-        start_index: [0, 100, 200, 300, 400, 500, 600, 700, 800, 900]
+        include:
+          - start: 0
+            count: 500
+          - start: 500
+            count: 500
+          - start: 1000
+            count: 500
+          - start: 1500
+            count: 500
+          - start: 2000
+            count: 500
+          - start: 2500
+            count: 500
+          - start: 3000
+            count: 500
+          - start: 3500
+            count: 500
+          - start: 4000
+            count: 500
+          - start: 4500
+            count: 500
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4 # Обновили до v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
+      - name: Setup Python
+        uses: actions/setup-python@v5 # Обновили до v5
 
       - name: Install dependencies
         run: pip install requests
 
       - name: Run Parser
-        run: python parser.py ${{ matrix.start_index }}
+        run: python parser.py ${{ matrix.start }} ${{ matrix.count }}
 
-      - name: Upload result
-        uses: actions/upload-artifact@v3
+      - name: Upload Data
+        uses: actions/upload-artifact@v4 # ТУТ БЫЛА ОШИБКА, теперь v4
         with:
-          name: market-data-${{ matrix.start_index }}
-          path: data_${{ matrix.start_index }}.json
+          name: results-chunk-${{ matrix.start }} # Имя должно быть уникальным
+          path: result_${{ matrix.start }}.json
